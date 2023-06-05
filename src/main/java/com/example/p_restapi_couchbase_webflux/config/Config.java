@@ -1,19 +1,22 @@
 package com.example.p_restapi_couchbase_webflux.config;
 
-import com.couchbase.client.java.Cluster;
-import com.couchbase.client.java.ReactiveBucket;
-import com.couchbase.client.java.ReactiveCluster;
-import com.couchbase.client.java.ReactiveScope;
+import com.couchbase.client.java.*;
+import com.couchbase.client.java.env.ClusterEnvironment;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.time.Duration;
 
 @Configuration
 public class Config {
     @Bean
     public Cluster cluster(@Value("${couchbase.clusterHost}") String hostname, @Value("${couchbase.username}") String username,
                                    @Value("${couchbase.password}") String password) {
-        return Cluster.connect(hostname, username, password);
+        ClusterEnvironment.Builder environmentBuilder = ClusterEnvironment.builder();
+        environmentBuilder.timeoutConfig().queryTimeout(Duration.ofMinutes(5)).build();
+        ClusterOptions options = ClusterOptions.clusterOptions(username,password).environment(environmentBuilder.build());
+        return Cluster.connect(hostname,options);
     }
 
     @Bean
